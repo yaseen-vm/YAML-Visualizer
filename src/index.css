@@ -1,0 +1,185 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 20% 97%;
+    --foreground: 220 25% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 25% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 25% 10%;
+
+    --primary: 220 90% 56%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 15% 93%;
+    --secondary-foreground: 220 25% 10%;
+
+    --muted: 220 15% 95%;
+    --muted-foreground: 220 10% 46%;
+
+    --accent: 260 80% 62%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 90%;
+    --input: 220 15% 90%;
+    --ring: 220 90% 56%;
+
+    --radius: 0.75rem;
+
+    --surface-glass: 0 0% 100% / 0.7;
+    --surface-elevated: 0 0% 100%;
+    --glow-primary: 220 90% 56% / 0.15;
+    --glow-accent: 260 80% 62% / 0.12;
+    --shadow-soft: 0 4px 24px -4px hsl(220 25% 10% / 0.08);
+    --shadow-elevated: 0 8px 40px -8px hsl(220 25% 10% / 0.12);
+    --shadow-glow: 0 0 30px hsl(220 90% 56% / 0.15);
+
+    --grid-color: 220 15% 90%;
+    --node-docker: 200 80% 52%;
+    --node-docker-foreground: 0 0% 100%;
+  }
+
+  .dark {
+    --background: 222 30% 8%;
+    --foreground: 220 15% 92%;
+
+    --card: 222 25% 12%;
+    --card-foreground: 220 15% 92%;
+
+    --popover: 222 25% 12%;
+    --popover-foreground: 220 15% 92%;
+
+    --primary: 220 90% 62%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 222 20% 16%;
+    --secondary-foreground: 220 15% 92%;
+
+    --muted: 222 20% 16%;
+    --muted-foreground: 220 10% 56%;
+
+    --accent: 260 80% 68%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 222 20% 18%;
+    --input: 222 20% 18%;
+    --ring: 220 90% 62%;
+
+    --surface-glass: 222 25% 12% / 0.8;
+    --surface-elevated: 222 25% 14%;
+    --glow-primary: 220 90% 62% / 0.2;
+    --glow-accent: 260 80% 68% / 0.15;
+    --shadow-soft: 0 4px 24px -4px hsl(0 0% 0% / 0.3);
+    --shadow-elevated: 0 8px 40px -8px hsl(0 0% 0% / 0.4);
+    --shadow-glow: 0 0 30px hsl(220 90% 62% / 0.2);
+
+    --grid-color: 222 20% 14%;
+    --node-docker: 200 80% 58%;
+    --node-docker-foreground: 0 0% 100%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-card/70 backdrop-blur-xl border border-border/50 rounded-xl;
+    box-shadow: var(--shadow-soft);
+  }
+  .glass-panel-elevated {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50 rounded-xl;
+    box-shadow: var(--shadow-elevated);
+  }
+  .glow-border {
+    box-shadow: var(--shadow-glow);
+  }
+  .docker-node {
+    @apply bg-card border border-border rounded-xl transition-all duration-300;
+    box-shadow: var(--shadow-soft);
+  }
+  .docker-node:hover {
+    box-shadow: var(--shadow-elevated), var(--shadow-glow);
+    @apply border-primary/30 scale-[1.02];
+  }
+}
+
+@layer utilities {
+  .animate-grid {
+    background-size: 40px 40px;
+    background-image:
+      linear-gradient(to right, hsl(var(--grid-color)) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--grid-color)) 1px, transparent 1px);
+    animation: gridMove 20s linear infinite;
+  }
+
+  @keyframes gridMove {
+    0% { background-position: 0 0; }
+    100% { background-position: 40px 40px; }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px hsl(var(--primary) / 0.1); }
+    50% { box-shadow: 0 0 40px hsl(var(--primary) / 0.25); }
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+}
+
+/* React Flow overrides */
+.react-flow__background {
+  opacity: 0.5;
+}
+
+.react-flow__edge-path {
+  stroke-width: 2;
+}
+
+.react-flow__controls {
+  @apply glass-panel !important;
+  border: none !important;
+  box-shadow: var(--shadow-soft) !important;
+}
+
+.react-flow__controls-button {
+  @apply bg-card border-border text-foreground !important;
+}
+
+.react-flow__controls-button:hover {
+  @apply bg-muted !important;
+}
+
+.react-flow__minimap {
+  @apply glass-panel !important;
+}
