@@ -4,21 +4,25 @@ import gsap from "gsap";
 import YamlEditor from "@/components/YamlEditor";
 import GraphView from "@/components/GraphView";
 import FloatingShapes from "@/components/FloatingShapes";
+import DockerIcon from "@/components/icons/DockerIcon";
+import GitHubIcon from "@/components/icons/GitHubIcon";
+import KubernetesIcon from "@/components/icons/KubernetesIcon";
+import HelmIcon from "@/components/icons/HelmIcon";
 import { detectYAMLType, type YAMLType } from "@/lib/yaml-detector";
 import { getParser, getSampleYAML } from "@/lib/parser-registry";
 import type { Node, Edge } from "@xyflow/react";
 
-const YAML_TYPES: { value: YAMLType; label: string; emoji: string }[] = [
-  { value: "docker-compose", label: "Docker Compose", emoji: "🐳" },
-  { value: "github-actions", label: "GitHub Actions", emoji: "⚡" },
-  { value: "kubernetes", label: "Kubernetes", emoji: "☸️" },
-  { value: "helm-template", label: "Helm Template", emoji: "⎈" },
+const YAML_TYPES: { value: YAMLType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  { value: "docker-compose", label: "Docker Compose", icon: DockerIcon },
+  { value: "github-actions", label: "GitHub Actions", icon: GitHubIcon },
+  { value: "kubernetes", label: "Kubernetes", icon: KubernetesIcon },
+  { value: "helm-template", label: "Helm Template", icon: HelmIcon },
 ];
 
 export default function Index() {
   const [yaml, setYaml] = useState("");
   const [yamlType, setYamlType] = useState<YAMLType>("docker-compose");
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(true);
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
@@ -27,6 +31,7 @@ export default function Index() {
   const mainRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    document.documentElement.classList.add("dark");
     setYaml(getSampleYAML("docker-compose"));
   }, []);
 
@@ -85,28 +90,29 @@ export default function Index() {
       <FloatingShapes isDark={isDark} />
 
       {/* Header */}
-      <header ref={headerRef} className="relative z-10 flex items-center justify-between px-6 py-3 border-b border-border bg-card/80 backdrop-blur-xl">
+      <header ref={headerRef} className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-6 py-3 gap-3 border-b border-border bg-card/80 backdrop-blur-xl">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-xl bg-primary/10">
             <FileCode className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-lg font-bold tracking-tight text-foreground">
+            <h1 className="text-base sm:text-lg font-bold tracking-tight text-foreground">
               YAML Visualizer
             </h1>
-            <p className="text-xs text-muted-foreground">Docker, GitHub Actions, Kubernetes & more</p>
+            <p className="text-xs text-muted-foreground hidden sm:block">Docker, GitHub Actions, Kubernetes & more</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <button
             onClick={handleVisualize}
             aria-label="visualize"
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-all hover:scale-[1.02] active:scale-[0.98] flex-1 sm:flex-initial"
             title="Update visualization with current YAML"
           >
             <Play className="h-4 w-4" />
-            Update Graph
+            <span className="hidden sm:inline">Update Graph</span>
+            <span className="sm:hidden">Update</span>
           </button>
           <button
             onClick={() => setIsDark(!isDark)}
@@ -119,15 +125,15 @@ export default function Index() {
       </header>
 
       {/* Main */}
-      <main ref={mainRef} className="relative z-10 flex flex-1 overflow-hidden">
+      <main ref={mainRef} className="relative z-10 flex flex-col lg:flex-row flex-1 overflow-hidden">
         {/* Editor sidebar */}
         <div
-          className={`relative border-r border-border bg-card/50 backdrop-blur-sm transition-all duration-300 ${
-            sidebarOpen ? "w-[420px]" : "w-0"
+          className={`relative border-b lg:border-b-0 lg:border-r border-border bg-card/50 backdrop-blur-sm transition-all duration-300 ${
+            sidebarOpen ? "h-[50vh] lg:h-auto lg:w-[420px]" : "h-0 lg:w-0"
           }`}
         >
           {sidebarOpen && (
-            <div className="h-full flex flex-col p-4 gap-3">
+            <div className="h-full flex flex-col p-3 sm:p-4 gap-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-semibold text-foreground">YAML Editor</span>
                 <span className="text-xs font-mono text-muted-foreground px-2 py-0.5 rounded bg-muted">
@@ -136,19 +142,23 @@ export default function Index() {
               </div>
 
               <div className="flex gap-1 flex-wrap">
-                {YAML_TYPES.map((type) => (
-                  <button
-                    key={type.value}
-                    onClick={() => handleLoadSample(type.value)}
-                    className={`text-xs px-2 py-1 rounded transition-colors ${
-                      yamlType === type.value
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary hover:bg-muted"
-                    }`}
-                  >
-                    {type.emoji} {type.label}
-                  </button>
-                ))}
+                {YAML_TYPES.map((type) => {
+                  const Icon = type.icon;
+                  return (
+                    <button
+                      key={type.value}
+                      onClick={() => handleLoadSample(type.value)}
+                      className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded transition-colors whitespace-nowrap ${
+                        yamlType === type.value
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary hover:bg-muted"
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">{type.label}</span>
+                    </button>
+                  );
+                })}
               </div>
 
               {errors.length > 0 && (
@@ -163,15 +173,16 @@ export default function Index() {
               </div>
             </div>
           )}
-
-          {/* Toggle button */}
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="absolute top-1/2 -right-4 z-20 p-1 rounded-full bg-card border border-border shadow-sm hover:bg-muted transition-colors"
-          >
-            {sidebarOpen ? <ChevronLeft className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-          </button>
         </div>
+
+        {/* Toggle button - always visible */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="absolute lg:top-1/2 top-0 lg:bottom-auto left-1/2 lg:left-[420px] -translate-x-1/2 lg:translate-x-0 lg:-translate-y-1/2 z-20 px-3 py-1 lg:p-1 rounded-full bg-card border border-border shadow-lg hover:bg-muted transition-all"
+        >
+          <span className="lg:hidden text-xs">{sidebarOpen ? "Hide Editor ▲" : "Show Editor ▼"}</span>
+          <span className="hidden lg:inline">{sidebarOpen ? <ChevronLeft className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}</span>
+        </button>
 
         {/* Graph area */}
         <div className="flex-1 min-w-0">

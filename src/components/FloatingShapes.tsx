@@ -17,6 +17,9 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
+    const isMobile = window.innerWidth < 768;
+    const particleCount = isMobile ? 50 : 250;
+
     const particles: Array<{
       x: number;
       y: number;
@@ -32,7 +35,7 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
       ? ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4']
       : ['#1d4ed8', '#6d28d9', '#be185d', '#d97706', '#047857', '#0369a1'];
 
-    for (let i = 0; i < 250; i++) {
+    for (let i = 0; i < particleCount; i++) {
       particles.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
@@ -53,7 +56,15 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
       mouseY = e.clientY;
     };
 
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        mouseX = e.touches[0].clientX;
+        mouseY = e.touches[0].clientY;
+      }
+    };
+
     window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -82,21 +93,24 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fill();
 
-        particles.forEach(p2 => {
-          const dx2 = p.x - p2.x;
-          const dy2 = p.y - p2.y;
-          const dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+        // Skip line connections on mobile for better performance
+        if (!isMobile) {
+          particles.forEach(p2 => {
+            const dx2 = p.x - p2.x;
+            const dy2 = p.y - p2.y;
+            const dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
 
-          if (dist2 < 100) {
-            ctx.strokeStyle = p.color;
-            ctx.globalAlpha = (1 - dist2 / 100) * 0.2;
-            ctx.lineWidth = 0.5;
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.stroke();
-          }
-        });
+            if (dist2 < 100) {
+              ctx.strokeStyle = p.color;
+              ctx.globalAlpha = (1 - dist2 / 100) * 0.2;
+              ctx.lineWidth = 0.5;
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.stroke();
+            }
+          });
+        }
       });
 
       requestAnimationFrame(animate);
@@ -113,6 +127,7 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('touchmove', handleTouchMove);
     };
   }, [isDark]);
 

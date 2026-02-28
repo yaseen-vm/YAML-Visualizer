@@ -183,3 +183,15 @@
 .react-flow__minimap {
   @apply glass-panel !important;
 }
+
+/* Mobile responsive fixes */
+@media (max-width: 640px) {
+  .react-flow__controls {
+    transform: scale(0.85);
+  }
+  
+  .react-flow__minimap {
+    width: 120px !important;
+    height: 80px !important;
+  }
+}
