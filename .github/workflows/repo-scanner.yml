@@ -1,0 +1,38 @@
+name: Code Analysis
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Repo Scanner
+        uses: yaseen-vm/repo_scanner@master
+        id: scanner
+        with:
+          mimo_api_key: ${{ secrets.MIMO_API_KEY }}
+          severity_threshold: medium
+          max_files: 50
+          create_issues: false
+          post_comment: true
+          ignore_patterns: "**/node_modules/**,**/dist/**,**/*.lock,**/*.lockb,**/public/**"
+
+      - name: Upload Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: repo-scanner-report
+          path: |
+            /tmp/repo-scanner-report.md
+            /tmp/repo-scanner-report.json
