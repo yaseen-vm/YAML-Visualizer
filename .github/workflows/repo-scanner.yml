@@ -24,7 +24,7 @@ jobs:
           mimo_api_key: ${{ secrets.MIMO_API_KEY }}
           severity_threshold: medium
           max_files: 50
-          create_issues: false
+          create_issues: true
           post_comment: true
           ignore_patterns: "**/node_modules/**,**/dist/**,**/*.lock,**/*.lockb,**/public/**"
 
