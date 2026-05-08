@@ -1,13 +1,14 @@
-name: Code Analysis
+name: Code Scan
 
 on:
   pull_request:
     branches: [main]
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   issues: write
   pull-requests: write
 
@@ -16,6 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Repo Scanner
         uses: yaseen-vm/repo_scanner@master
@@ -24,8 +27,8 @@ jobs:
           mimo_api_key: ${{ secrets.MIMO_API_KEY }}
           severity_threshold: medium
           max_files: 50
-          create_issues: true
-          post_comment: true
+          create_issues: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          post_comment: ${{ github.event_name == 'pull_request' }}
           ignore_patterns: "**/node_modules/**,**/dist/**,**/*.lock,**/*.lockb,**/public/**"
 
       - name: Upload Report
@@ -37,25 +40,6 @@ jobs:
             /tmp/repo-scanner-report.md
             /tmp/repo-scanner-report.json
 
-  fix:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: scan
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Configure Git
-        run: |
-          git config user.name "repo-scanner[bot]"
-          git config user.email "repo-scanner[bot]@users.noreply.github.com"
-
-      - name: Repo Scanner Fix
-        uses: yaseen-vm/repo_scanner@master
-        with:
-          mimo_api_key: ${{ secrets.MIMO_API_KEY }}
-          github_token: ${{ secrets.FIX_TOKEN }}
-          mode: fix
-          max_fixes: "3"
-          severity_threshold: high
+      - name: Report issue count
+        if: always()
+        run: echo "Found ${{ steps.scanner.outputs.total_issues }} issue(s)"

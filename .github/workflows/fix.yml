@@ -1,0 +1,50 @@
+name: Fix Issues
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_fixes:
+        description: "Maximum number of issues to fix"
+        default: "3"
+        required: false
+      severity_threshold:
+        description: "Minimum severity to fix (low/medium/high/critical)"
+        default: "high"
+        required: false
+  schedule:
+    - cron: '0 9 * * 1'  # Every Monday at 9am UTC
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "repo-scanner[bot]"
+          git config user.email "repo-scanner[bot]@users.noreply.github.com"
+
+      - name: Repo Scanner Fix
+        uses: yaseen-vm/repo_scanner@master
+        id: fix
+        with:
+          mimo_api_key: ${{ secrets.MIMO_API_KEY }}
+          github_token: ${{ secrets.FIX_TOKEN || github.token }}
+          mode: fix
+          max_fixes: ${{ github.event.inputs.max_fixes || '3' }}
+          severity_threshold: ${{ github.event.inputs.severity_threshold || 'high' }}
+          min_age_days: ${{ github.event_name == 'schedule' && '3' || '0' }}
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "Fixes created: ${{ steps.fix.outputs.fixes_created }}"
+          echo "PR URLs: ${{ steps.fix.outputs.pr_urls }}"
