@@ -55,6 +55,7 @@ jobs:
         uses: yaseen-vm/repo_scanner@master
         with:
           mimo_api_key: ${{ secrets.MIMO_API_KEY }}
+          github_token: ${{ secrets.FIX_TOKEN }}
           mode: fix
           max_fixes: "3"
           severity_threshold: high
