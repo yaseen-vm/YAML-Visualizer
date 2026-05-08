@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
   issues: write
   pull-requests: write
 
@@ -36,3 +36,25 @@ jobs:
           path: |
             /tmp/repo-scanner-report.md
             /tmp/repo-scanner-report.json
+
+  fix:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: scan
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "repo-scanner[bot]"
+          git config user.email "repo-scanner[bot]@users.noreply.github.com"
+
+      - name: Repo Scanner Fix
+        uses: yaseen-vm/repo_scanner@master
+        with:
+          mimo_api_key: ${{ secrets.MIMO_API_KEY }}
+          mode: fix
+          max_fixes: "3"
+          severity_threshold: high
