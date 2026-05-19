@@ -34,10 +34,7 @@ export function transformToGraph(services: any) {
         : Object.keys(config.depends_on);
 
       deps.forEach((dep: string) => {
-        if (!Object.keys(services).includes(dep)) {
-          throw new Error(`Invalid dependency: service '${dep}' referenced by '${name}' does not exist`);
-        }
-
+        if (!services[dep]) return;
         const edgeId = `${name}-${dep}`;
         if (!edgeSet.has(edgeId)) {
           edges.push({
