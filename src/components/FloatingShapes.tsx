@@ -69,7 +69,9 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      particles.forEach(p => {
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        
         const dx = mouseX - p.x;
         const dy = mouseY - p.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
@@ -95,7 +97,8 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
 
         // Skip line connections on mobile for better performance
         if (!isMobile) {
-          particles.forEach(p2 => {
+          for (let j = i + 1; j < particles.length; j++) {
+            const p2 = particles[j];
             const dx2 = p.x - p2.x;
             const dy2 = p.y - p2.y;
             const dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
@@ -109,9 +112,9 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
               ctx.lineTo(p2.x, p2.y);
               ctx.stroke();
             }
-          });
+          }
         }
-      });
+      }
 
       requestAnimationFrame(animate);
     };
