@@ -66,16 +66,22 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
 
+    const connectionDistSq = 100 * 100;
+    let animId: number;
+
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      particles.forEach(p => {
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
         const dx = mouseX - p.x;
         const dy = mouseY - p.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        const distSq = dx * dx + dy * dy;
         const maxDist = 150;
+        const maxDistSq = maxDist * maxDist;
 
-        if (dist < maxDist) {
+        if (distSq < maxDistSq) {
+          const dist = Math.sqrt(distSq);
           const force = (maxDist - dist) / maxDist;
           p.x -= (dx / dist) * force * 10;
           p.y -= (dy / dist) * force * 10;
@@ -94,15 +100,19 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fill();
+      }
 
-        // Skip line connections on mobile for better performance
-        if (!isMobile) {
-          particles.forEach(p2 => {
+      if (!isMobile) {
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          for (let j = i + 1; j < particles.length; j++) {
+            const p2 = particles[j];
             const dx2 = p.x - p2.x;
             const dy2 = p.y - p2.y;
-            const dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+            const dist2Sq = dx2 * dx2 + dy2 * dy2;
 
-            if (dist2 < 100) {
+            if (dist2Sq < connectionDistSq) {
+              const dist2 = Math.sqrt(dist2Sq);
               ctx.strokeStyle = p.color;
               ctx.globalAlpha = (1 - dist2 / 100) * 0.2;
               ctx.lineWidth = 0.5;
@@ -111,16 +121,16 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
               ctx.lineTo(p2.x, p2.y);
               ctx.stroke();
             }
-          });
+          }
         }
         
         ctx.restore();
-      });
+      }
 
-      requestAnimationFrame(animate);
+      animId = requestAnimationFrame(animate);
     };
 
-    animate();
+    animId = requestAnimationFrame(animate);
 
     const handleResize = () => {
       canvas.width = window.innerWidth;
@@ -129,6 +139,7 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
 
     window.addEventListener('resize', handleResize);
     return () => {
+      cancelAnimationFrame(animId);
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('touchmove', handleTouchMove);
