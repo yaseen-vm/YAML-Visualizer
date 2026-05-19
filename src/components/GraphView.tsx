@@ -7,6 +7,7 @@ import {
   BackgroundVariant,
   useNodesState,
   useEdgesState,
+  useReactFlow,
   type Node,
   type Edge,
 } from "@xyflow/react";
@@ -35,6 +36,7 @@ export default function GraphView({ nodes: initNodes, edges: initEdges }: GraphV
   const flowRef = useRef<HTMLDivElement>(null);
   const prevNodesRef = useRef<string>("");
   const prevEdgesRef = useRef<string>("");
+  const reactFlowInstance = useReactFlow();
 
   useEffect(() => {
     const currentNodesJSON = JSON.stringify(initNodes);
@@ -49,18 +51,49 @@ export default function GraphView({ nodes: initNodes, edges: initEdges }: GraphV
   }, [initNodes, initEdges, setNodes, setEdges]);
 
   const handleExport = useCallback(() => {
-    const el = flowRef.current?.querySelector(".react-flow__viewport") as HTMLElement;
+    if (!reactFlowInstance) return;
+    
+    const nodesBounds = reactFlowInstance.getNodes().reduce((bounds, node) => {
+      const nodeWidth = node.measured?.width || node.width || 0;
+      const nodeHeight = node.measured?.height || node.height || 0;
+      
+      return {
+        x: Math.min(bounds.x, node.position.x),
+        y: Math.min(bounds.y, node.position.y),
+        width: Math.max(bounds.width, node.position.x + nodeWidth),
+        height: Math.max(bounds.height, node.position.y + nodeHeight),
+      };
+    }, { x: Infinity, y: Infinity, width: -Infinity, height: -Infinity });
+
+    const padding = 40;
+    const width = nodesBounds.width - nodesBounds.x + padding * 2;
+    const height = nodesBounds.height - nodesBounds.y + padding * 2;
+    
+    const viewport = reactFlowInstance.getViewport();
+    
+    const el = flowRef.current;
     if (!el) return;
+
     toPng(el, {
       backgroundColor: "#f5f6fa",
-      style: { transform: "none" },
+      width,
+      height,
+      style: {
+        transform: `translate(${padding - nodesBounds.x * viewport.zoom}px, ${padding - nodesBounds.y * viewport.zoom}px) scale(${viewport.zoom})`,
+        transformOrigin: 'top left',
+        width: `${el.offsetWidth}px`,
+        height: `${el.offsetHeight}px`,
+      },
     }).then((dataUrl) => {
       const a = document.createElement("a");
       a.href = dataUrl;
       a.download = "docker-compose-diagram.png";
       a.click();
+    }).catch((err) => {
+      console.error('Export failed:', err);
+      alert('Export failed. Please try again.');
     });
-  }, []);
+  }, [reactFlowInstance]);
 
   if (nodes.length === 0) return null;
 
