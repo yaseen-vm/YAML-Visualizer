@@ -90,17 +90,21 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
       
       return { grid, cols, rows };
     };
+    let animId: number;
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      particles.forEach(p => {
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
         const dx = mouseX - p.x;
         const dy = mouseY - p.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        const distSq = dx * dx + dy * dy;
         const maxDist = 150;
+        const maxDistSq = maxDist * maxDist;
 
-        if (dist < maxDist) {
+        if (distSq < maxDistSq) {
+          const dist = Math.sqrt(distSq);
           const force = (maxDist - dist) / maxDist;
           p.x -= (dx / dist) * force * 10;
           p.y -= (dy / dist) * force * 10;
@@ -112,12 +116,14 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
         if (p.x < 0 || p.x > canvas.width) p.baseX = Math.random() * canvas.width;
         if (p.y < 0 || p.y > canvas.height) p.baseY = Math.random() * canvas.height;
 
+        ctx.save();
+        
         ctx.fillStyle = p.color;
         ctx.globalAlpha = 0.6;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fill();
-      });
+      }
 
       if (!isMobile) {
         const { grid, cols, rows } = buildSpatialGrid();
@@ -152,11 +158,13 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
           }
         }
       }
+      
+      ctx.restore();
 
-      requestAnimationFrame(animate);
+      animId = requestAnimationFrame(animate);
     };
 
-    animate();
+    animId = requestAnimationFrame(animate);
 
     const handleResize = () => {
       canvas.width = window.innerWidth;
@@ -165,6 +173,7 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
 
     window.addEventListener('resize', handleResize);
     return () => {
+      cancelAnimationFrame(animId);
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('touchmove', handleTouchMove);
