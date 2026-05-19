@@ -13,6 +13,10 @@ export interface GraphEdge {
 }
 
 export function transformToGraph(services: any) {
+  if (!services || typeof services !== 'object') {
+    throw new Error('Invalid services parameter: must be a non-null object');
+  }
+
   const nodes: GraphNode[] = Object.keys(services).map((name, i) => ({
     id: name,
     data: {
@@ -32,6 +36,10 @@ export function transformToGraph(services: any) {
         : Object.keys(config.depends_on);
 
       deps.forEach((dep: string) => {
+        if (!Object.keys(services).includes(dep)) {
+          throw new Error(`Invalid dependency: service '${dep}' referenced by '${name}' does not exist`);
+        }
+
         const edgeId = `${name}-${dep}`;
         if (!edgeSet.has(edgeId)) {
           edges.push({
@@ -50,6 +58,10 @@ export function transformToGraph(services: any) {
 }
 
 export function detectCircularDeps(services: any): string[] {
+  if (!services || typeof services !== 'object') {
+    throw new Error('Invalid services parameter: must be a non-null object');
+  }
+
   const cycles: string[] = [];
   const visited = new Set<string>();
   const recStack = new Set<string>();
@@ -63,6 +75,10 @@ export function detectCircularDeps(services: any): string[] {
     if (deps) {
       const depList = Array.isArray(deps) ? deps : Object.keys(deps);
       for (const dep of depList) {
+        if (!Object.keys(services).includes(dep)) {
+          throw new Error(`Invalid dependency: service '${dep}' referenced by '${node}' does not exist`);
+        }
+
         if (!visited.has(dep)) {
           dfs(dep, [...path]);
         } else if (recStack.has(dep)) {
