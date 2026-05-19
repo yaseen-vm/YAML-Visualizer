@@ -5,6 +5,8 @@ import gsap from "gsap";
 import type { DockerService } from "@/lib/docker-parser";
 
 function DockerNode({ data }: NodeProps) {
+  if (!data.service) return null;
+  
   const service = data.service as DockerService;
   const ref = useRef<HTMLDivElement>(null);
 
@@ -17,6 +19,8 @@ function DockerNode({ data }: NodeProps) {
       );
     }
   }, []);
+
+  if (!service) return null;
 
   const getIcon = () => {
     const img = service.image?.toLowerCase() || "";
