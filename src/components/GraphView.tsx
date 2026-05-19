@@ -33,10 +33,19 @@ export default function GraphView({ nodes: initNodes, edges: initEdges }: GraphV
   const [nodes, setNodes, onNodesChange] = useNodesState([] as Node[]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([] as Edge[]);
   const flowRef = useRef<HTMLDivElement>(null);
+  const prevNodesRef = useRef<string>("");
+  const prevEdgesRef = useRef<string>("");
 
   useEffect(() => {
-    setNodes(initNodes);
-    setEdges(initEdges);
+    const currentNodesJSON = JSON.stringify(initNodes);
+    const currentEdgesJSON = JSON.stringify(initEdges);
+
+    if (currentNodesJSON !== prevNodesRef.current || currentEdgesJSON !== prevEdgesRef.current) {
+      setNodes(initNodes);
+      setEdges(initEdges);
+      prevNodesRef.current = currentNodesJSON;
+      prevEdgesRef.current = currentEdgesJSON;
+    }
   }, [initNodes, initEdges, setNodes, setEdges]);
 
   const handleExport = useCallback(() => {
