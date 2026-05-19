@@ -41,6 +41,10 @@ const useFormField = () => {
     throw new Error("useFormField should be used within <FormField>");
   }
 
+  if (!itemContext) {
+    throw new Error("useFormField must be used within <FormItem>");
+  }
+
   const { id } = itemContext;
 
   return {
@@ -57,7 +61,7 @@ type FormItemContextValue = {
   id: string;
 };
 
-const FormItemContext = React.createContext<FormItemContextValue>({} as FormItemContextValue);
+const FormItemContext = React.createContext<FormItemContextValue | undefined>(undefined);
 
 const FormItem = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => {
