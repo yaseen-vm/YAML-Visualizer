@@ -50,6 +50,9 @@ export default function GraphView({ nodes: initNodes, edges: initEdges }: GraphV
       a.href = dataUrl;
       a.download = "docker-compose-diagram.png";
       a.click();
+    }).catch((err) => {
+      console.error('Export failed:', err);
+      alert('Export failed. Please try again.');
     });
   }, []);
 
