@@ -66,7 +66,12 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
 
+    let isRunning = true;
+    let rafId: number;
+
     const animate = () => {
+      if (!isRunning) return;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       particles.forEach(p => {
@@ -113,10 +118,10 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
         }
       });
 
-      requestAnimationFrame(animate);
+      rafId = requestAnimationFrame(animate);
     };
 
-    animate();
+    rafId = requestAnimationFrame(animate);
 
     const handleResize = () => {
       canvas.width = window.innerWidth;
@@ -125,6 +130,8 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
 
     window.addEventListener('resize', handleResize);
     return () => {
+      isRunning = false;
+      cancelAnimationFrame(rafId);
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('touchmove', handleTouchMove);
