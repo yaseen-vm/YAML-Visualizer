@@ -87,6 +87,8 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
         if (p.x < 0 || p.x > canvas.width) p.baseX = Math.random() * canvas.width;
         if (p.y < 0 || p.y > canvas.height) p.baseY = Math.random() * canvas.height;
 
+        ctx.save();
+        
         ctx.fillStyle = p.color;
         ctx.globalAlpha = 0.6;
         ctx.beginPath();
@@ -111,6 +113,8 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
             }
           });
         }
+        
+        ctx.restore();
       });
 
       requestAnimationFrame(animate);
