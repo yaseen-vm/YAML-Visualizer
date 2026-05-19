@@ -1,10 +1,10 @@
 import yaml from 'js-yaml';
 
-export function parseCompose(content: string): { services: Record<string, any>; error?: string } {
+export function parseCompose(content: string) {
   try {
-    const doc = yaml.load(content) as any;
-    return { services: doc?.services || {} };
+    const doc = yaml.load(content, { schema: yaml.DEFAULT_SAFE_SCHEMA }) as any;
+    return { services: doc.services || {} };
   } catch (e) {
-    return { services: {}, error: e instanceof Error ? e.message : 'Unknown parse error' };
+    throw new Error('Invalid YAML: ' + (e as Error).message);
   }
 }
