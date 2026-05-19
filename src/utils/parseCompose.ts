@@ -2,9 +2,9 @@ import yaml from 'js-yaml';
 
 export function parseCompose(content: string) {
   try {
-    const doc = yaml.load(content) as any;
-    return { services: doc.services || {}, error: null };
+    const doc = yaml.load(content, { schema: yaml.DEFAULT_SAFE_SCHEMA }) as any;
+    return { services: doc.services || {} };
   } catch (e) {
-    return { services: {}, error: (e as Error).message };
+    throw new Error('Invalid YAML: ' + (e as Error).message);
   }
 }
