@@ -13,6 +13,8 @@ export interface GraphEdge {
 }
 
 export function transformToGraph(services: any) {
+  if (!services || typeof services !== 'object') return { nodes: [], edges: [] };
+  
   const nodes: GraphNode[] = Object.keys(services).map((name, i) => ({
     id: name,
     data: {
@@ -50,6 +52,8 @@ export function transformToGraph(services: any) {
 }
 
 export function detectCircularDeps(services: any): string[] {
+  if (!services || typeof services !== 'object') return [];
+  
   const cycles: string[] = [];
   const visited = new Set<string>();
   const recStack = new Set<string>();
