@@ -34,6 +34,7 @@ export function transformToGraph(services: any) {
         : Object.keys(config.depends_on);
 
       deps.forEach((dep: string) => {
+        if (!services[dep]) return;
         const edgeId = `${name}-${dep}`;
         if (!edgeSet.has(edgeId)) {
           edges.push({
