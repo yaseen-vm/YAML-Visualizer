@@ -55,10 +55,18 @@ export function detectCircularDeps(services: any): string[] {
   if (!services || typeof services !== 'object') return [];
   
   const cycles: string[] = [];
-  const visited = new Set<string>();
   const recStack = new Set<string>();
 
-  function dfs(node: string, path: string[]): void {
+  function dfs(node: string, path: string[], visited: Set<string>): void {
+    if (recStack.has(node)) {
+      cycles.push(`${[...path, node].join(' → ')}`);
+      return;
+    }
+    
+    if (visited.has(node)) {
+      return;
+    }
+    
     visited.add(node);
     recStack.add(node);
     path.push(node);
@@ -67,11 +75,7 @@ export function detectCircularDeps(services: any): string[] {
     if (deps) {
       const depList = Array.isArray(deps) ? deps : Object.keys(deps);
       for (const dep of depList) {
-        if (!visited.has(dep)) {
-          dfs(dep, [...path]);
-        } else if (recStack.has(dep)) {
-          cycles.push(`${[...path, dep].join(' → ')}`);
-        }
+        dfs(dep, [...path], visited);
       }
     }
 
@@ -79,9 +83,8 @@ export function detectCircularDeps(services: any): string[] {
   }
 
   Object.keys(services).forEach(service => {
-    if (!visited.has(service)) {
-      dfs(service, []);
-    }
+    const visited = new Set<string>();
+    dfs(service, [], visited);
   });
 
   return cycles;
