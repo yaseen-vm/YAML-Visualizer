@@ -92,10 +92,15 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fill();
+      });
 
-        // Skip line connections on mobile for better performance
-        if (!isMobile) {
-          particles.forEach(p2 => {
+      // Skip line connections on mobile for better performance
+      if (!isMobile) {
+        // Optimized: only check particles with higher index since connections are symmetric
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          for (let j = i + 1; j < particles.length; j++) {
+            const p2 = particles[j];
             const dx2 = p.x - p2.x;
             const dy2 = p.y - p2.y;
             const dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
@@ -109,9 +114,9 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
               ctx.lineTo(p2.x, p2.y);
               ctx.stroke();
             }
-          });
+          }
         }
-      });
+      }
 
       requestAnimationFrame(animate);
     };
