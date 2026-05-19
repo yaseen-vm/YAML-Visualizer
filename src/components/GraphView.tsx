@@ -1,3 +1,5 @@
+src/components/GraphView.tsx
+```typescript
 import { useCallback, useEffect, useRef } from "react";
 import {
   ReactFlow,
@@ -33,10 +35,19 @@ export default function GraphView({ nodes: initNodes, edges: initEdges }: GraphV
   const [nodes, setNodes, onNodesChange] = useNodesState([] as Node[]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([] as Edge[]);
   const flowRef = useRef<HTMLDivElement>(null);
+  const prevInitNodesRef = useRef<string>("");
+  const prevInitEdgesRef = useRef<string>("");
 
   useEffect(() => {
-    setNodes(initNodes);
-    setEdges(initEdges);
+    const currentNodesStr = JSON.stringify(initNodes);
+    const currentEdgesStr = JSON.stringify(initEdges);
+    
+    if (currentNodesStr !== prevInitNodesRef.current || currentEdgesStr !== prevInitEdgesRef.current) {
+      setNodes(initNodes);
+      setEdges(initEdges);
+      prevInitNodesRef.current = currentNodesStr;
+      prevInitEdgesRef.current = currentEdgesStr;
+    }
   }, [initNodes, initEdges, setNodes, setEdges]);
 
   const handleExport = useCallback(() => {
@@ -88,3 +99,4 @@ export default function GraphView({ nodes: initNodes, edges: initEdges }: GraphV
     </div>
   );
 }
+```
