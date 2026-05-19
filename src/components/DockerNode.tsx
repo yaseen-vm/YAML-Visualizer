@@ -18,6 +18,8 @@ function DockerNode({ data }: NodeProps) {
     }
   }, []);
 
+  if (!service) return null;
+
   const getIcon = () => {
     const img = service.image?.toLowerCase() || "";
     if (img.includes("postgres") || img.includes("mysql") || img.includes("mongo") || img.includes("redis"))
