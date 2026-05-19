@@ -19,6 +19,8 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
 
     const isMobile = window.innerWidth < 768;
     const particleCount = isMobile ? 50 : 250;
+    const CONNECTION_DISTANCE = 100;
+    const GRID_CELL_SIZE = CONNECTION_DISTANCE;
 
     const particles: Array<{
       x: number;
@@ -66,6 +68,29 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
 
+    const buildSpatialGrid = () => {
+      const cols = Math.ceil(canvas.width / GRID_CELL_SIZE);
+      const rows = Math.ceil(canvas.height / GRID_CELL_SIZE);
+      const grid: Array<Array<Array<typeof particles[0]>>> = [];
+      
+      for (let i = 0; i < cols; i++) {
+        grid[i] = [];
+        for (let j = 0; j < rows; j++) {
+          grid[i][j] = [];
+        }
+      }
+      
+      for (const p of particles) {
+        const col = Math.floor(p.x / GRID_CELL_SIZE);
+        const row = Math.floor(p.y / GRID_CELL_SIZE);
+        if (col >= 0 && col < cols && row >= 0 && row < rows) {
+          grid[col][row].push(p);
+        }
+      }
+      
+      return { grid, cols, rows };
+    };
+
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -92,26 +117,41 @@ export default function FloatingShapes({ isDark }: FloatingShapesProps) {
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fill();
-
-        // Skip line connections on mobile for better performance
-        if (!isMobile) {
-          particles.forEach(p2 => {
-            const dx2 = p.x - p2.x;
-            const dy2 = p.y - p2.y;
-            const dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-
-            if (dist2 < 100) {
-              ctx.strokeStyle = p.color;
-              ctx.globalAlpha = (1 - dist2 / 100) * 0.2;
-              ctx.lineWidth = 0.5;
-              ctx.beginPath();
-              ctx.moveTo(p.x, p.y);
-              ctx.lineTo(p2.x, p2.y);
-              ctx.stroke();
-            }
-          });
-        }
       });
+
+      if (!isMobile) {
+        const { grid, cols, rows } = buildSpatialGrid();
+        
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          const col = Math.floor(p.x / GRID_CELL_SIZE);
+          const row = Math.floor(p.y / GRID_CELL_SIZE);
+          
+          for (let c = Math.max(0, col - 1); c <= Math.min(cols - 1, col + 1); c++) {
+            for (let r = Math.max(0, row - 1); r <= Math.min(rows - 1, row + 1); r++) {
+              const cell = grid[c][r];
+              for (let j = 0; j < cell.length; j++) {
+                const p2 = cell[j];
+                if (p2 === p) continue;
+                
+                const dx2 = p.x - p2.x;
+                const dy2 = p.y - p2.y;
+                const dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+
+                if (dist2 < CONNECTION_DISTANCE) {
+                  ctx.strokeStyle = p.color;
+                  ctx.globalAlpha = (1 - dist2 / CONNECTION_DISTANCE) * 0.2;
+                  ctx.lineWidth = 0.5;
+                  ctx.beginPath();
+                  ctx.moveTo(p.x, p.y);
+                  ctx.lineTo(p2.x, p2.y);
+                  ctx.stroke();
+                }
+              }
+            }
+          }
+        }
+      }
 
       requestAnimationFrame(animate);
     };
